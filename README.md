@@ -121,11 +121,7 @@ input/interview_001.mp4
 调用 OpenAI-compatible API 做删除判断，并在粗剪后重跑 WhisperX 生成字幕：
 
 ```bash
-python roughcut.py input/demo.MOV \
-  --profile default \
-  --ai \
-  --subtitle \
-  --project-dir .
+python roughcut.py input/demo.MOV --ai --subtitle --project-dir .
 ```
 
 > 将 `input/demo.MOV` 替换为你的实际素材路径即可。
@@ -143,9 +139,7 @@ python roughcut.py input/demo.MOV \
 如果还没有配置 API key，可以先用本地保守规则运行。本地规则会自动压缩明显长空白，口头禅候选默认进入复查：
 
 ```bash
-python roughcut.py input/interview_001.mp4 \
-  --profile default \
-  --project-dir .
+python roughcut.py input/demo.MOV --project-dir .
 ```
 
 ### 4. 只生成清单，不渲染视频
@@ -153,10 +147,7 @@ python roughcut.py input/interview_001.mp4 \
 调试转写、候选检测或 AI 判断时，可以先不生成粗剪视频：
 
 ```bash
-python roughcut.py input/interview_001.mp4 \
-  --profile default \
-  --no-render \
-  --project-dir .
+python roughcut.py input/demo.MOV --no-render --project-dir .
 ```
 
 ### 5. 生成 Auto-Editor 参考版
@@ -164,10 +155,7 @@ python roughcut.py input/interview_001.mp4 \
 如果安装了 Auto-Editor，可以额外生成一个快速去空白预览版：
 
 ```bash
-python roughcut.py input/interview_001.mp4 \
-  --profile default \
-  --autoeditor-preview \
-  --project-dir .
+python roughcut.py input/demo.MOV --autoeditor-preview --project-dir .
 ```
 
 输出位置：`work/01_autoeditor_preview.mp4`。
