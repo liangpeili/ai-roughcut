@@ -8,9 +8,11 @@ from openai import OpenAI
 from .io_utils import read_json, write_json
 
 SYSTEM_PROMPT = "你是纪实访谈视频粗剪助手。只返回 JSON。"
+DEFAULT_BASE_URL = "https://api.openai.com/v1"
+DEFAULT_MODEL = "gpt-4.1-mini"
 
 
-def build_kimi_task(transcript: dict, candidates: list[dict], profile_name: str) -> dict:
+def build_ai_task(transcript: dict, candidates: list[dict], profile_name: str) -> dict:
     return {
         "role": "documentary_interview_roughcut_assistant",
         "profile": profile_name,
@@ -38,13 +40,13 @@ def build_kimi_task(transcript: dict, candidates: list[dict], profile_name: str)
     }
 
 
-def call_kimi(task_path: Path, result_path: Path, model: str | None = None) -> dict:
-    api_key = os.environ.get("MOONSHOT_API_KEY")
+def call_openai_compatible(task_path: Path, result_path: Path, model: str | None = None) -> dict:
+    api_key = os.environ.get("AI_API_KEY") or os.environ.get("OPENAI_API_KEY")
     if not api_key:
-        raise RuntimeError("MOONSHOT_API_KEY is required when --kimi is enabled")
-    client = OpenAI(api_key=api_key, base_url="https://api.moonshot.ai/v1")
+        raise RuntimeError("AI_API_KEY or OPENAI_API_KEY is required when --ai is enabled")
+    client = OpenAI(api_key=api_key, base_url=os.environ.get("AI_BASE_URL", DEFAULT_BASE_URL))
     response = client.chat.completions.create(
-        model=model or os.environ.get("KIMI_MODEL", "kimi-latest"),
+        model=model or os.environ.get("AI_MODEL", DEFAULT_MODEL),
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": task_path.read_text(encoding="utf-8")},
@@ -53,7 +55,7 @@ def call_kimi(task_path: Path, result_path: Path, model: str | None = None) -> d
     )
     content = response.choices[0].message.content
     if content is None:
-        raise RuntimeError("Kimi returned an empty response")
+        raise RuntimeError("AI model returned an empty response")
     data = read_json_from_string(content)
     write_json(result_path, data)
     return data
@@ -68,6 +70,6 @@ def read_json_from_string(content: str) -> dict:
     return json.loads(stripped)
 
 
-def load_kimi_results(path: Path) -> list[dict]:
+def load_ai_results(path: Path) -> list[dict]:
     data = read_json(path)
     return list(data.get("cuts", []))

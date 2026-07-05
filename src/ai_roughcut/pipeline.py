@@ -17,7 +17,7 @@ from .ffmpeg_ops import (
 )
 from .fillers import find_filler_candidates
 from .io_utils import ensure_dir, read_json, write_json
-from .kimi import build_kimi_task, call_kimi, load_kimi_results
+from .llm import build_ai_task, call_openai_compatible, load_ai_results
 from .reports import write_review_csv, write_review_html
 from .silence import parse_ffmpeg_silencedetect
 from .subtitles import srt_to_ass
@@ -29,7 +29,7 @@ class PipelineOptions:
     input_path: Path
     project_dir: Path
     profile: Profile
-    use_kimi: bool = False
+    use_ai: bool = False
     subtitle: bool = False
     render: bool = True
     autoeditor_preview: bool = False
@@ -61,18 +61,18 @@ def run_pipeline(options: PipelineOptions) -> dict:
         run_autoeditor_preview(normalized, paths.work / "01_autoeditor_preview.mp4")
 
     candidates = [item.to_dict() for item in silence_candidates + filler_candidates]
-    task = build_kimi_task(transcript, candidates, options.profile.name)
-    kimi_task_path = paths.work / "kimi" / "kimi_task_001.json"
-    kimi_result_path = paths.work / "kimi" / "kimi_result_001.json"
-    write_json(kimi_task_path, task)
+    task = build_ai_task(transcript, candidates, options.profile.name)
+    ai_task_path = paths.work / "ai" / "ai_task_001.json"
+    ai_result_path = paths.work / "ai" / "ai_result_001.json"
+    write_json(ai_task_path, task)
 
     raw_decisions: list[dict]
-    if options.use_kimi:
-        call_kimi(kimi_task_path, kimi_result_path)
-        raw_decisions = load_kimi_results(kimi_result_path)
+    if options.use_ai:
+        call_openai_compatible(ai_task_path, ai_result_path)
+        raw_decisions = load_ai_results(ai_result_path)
     else:
         raw_decisions = conservative_local_decisions(candidates)
-        write_json(kimi_result_path, {"cuts": raw_decisions})
+        write_json(ai_result_path, {"cuts": raw_decisions})
 
     duration = media_duration(normalized)
     cut_list = build_cut_list(str(normalized), duration, raw_decisions, options.profile.decisions)
@@ -164,7 +164,7 @@ class ProjectPaths:
             self.work,
             self.work / "transcript",
             self.work / "candidates",
-            self.work / "kimi",
+            self.work / "ai",
             self.work / "cuts",
             self.work / "clips",
             self.output,

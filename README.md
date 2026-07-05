@@ -1,6 +1,6 @@
 # AI Roughcut
 
-本项目是一个通用的访谈视频自动粗剪流水线。它不负责最终内容取舍，只处理机械环节：统一素材格式、转写、检测长空白、标出口头禅候选、生成 Kimi 判断任务、合并剪辑清单、输出粗剪视频、字幕和人工复查报告。
+本项目是一个通用的访谈视频自动粗剪流水线。它不负责最终内容取舍，只处理机械环节：统一素材格式、转写、检测长空白、标出口头禅候选、生成 AI 判断任务、合并剪辑清单、输出粗剪视频、字幕和人工复查报告。
 
 默认策略偏保守，适合纪实访谈、街采、口述访谈、课程访谈等需要保留真实语气和人物状态的素材：被访者的犹豫、沉默、笑声、方言语气词默认进入复查或保留，不做激进自动删除。
 
@@ -14,7 +14,7 @@ ai_roughcut/
 │   ├── audio.wav
 │   ├── transcript/
 │   ├── candidates/
-│   ├── kimi/
+│   ├── ai/
 │   ├── cuts/
 │   └── clips/
 ├── output/
@@ -86,16 +86,25 @@ Auto-Editor 是可选依赖，只在使用 `--autoeditor-preview` 时需要：
 auto-editor --help
 ```
 
-### 4. 配置 Kimi，可选
+### 4. 配置 AI 模型，可选
 
-只有传入 `--kimi` 时才需要配置 Moonshot/Kimi API key：
+只有传入 `--ai` 时才需要配置 OpenAI-compatible API。默认使用 OpenAI 官方接口，也可以通过 `AI_BASE_URL` 指向其他兼容 OpenAI Chat Completions 格式的服务：
 
 ```bash
-export MOONSHOT_API_KEY="你的 key"
-export KIMI_MODEL="kimi-latest"
+export AI_API_KEY="你的 key"
+export AI_BASE_URL="https://api.openai.com/v1"
+export AI_MODEL="gpt-4.1-mini"
 ```
 
-模型名以你的 Moonshot 控制台实际可用模型为准。
+使用第三方兼容服务时，替换 `AI_BASE_URL` 和 `AI_MODEL` 即可：
+
+```bash
+export AI_API_KEY="你的服务商 key"
+export AI_BASE_URL="https://your-provider.example/v1"
+export AI_MODEL="provider-model-name"
+```
+
+模型名以对应服务商控制台实际可用模型为准。
 
 ## 运行
 
@@ -109,12 +118,12 @@ input/interview_001.mp4
 
 ### 2. 完整粗剪
 
-调用 Kimi 做删除判断，并在粗剪后重跑 WhisperX 生成字幕：
+调用 OpenAI-compatible API 做删除判断，并在粗剪后重跑 WhisperX 生成字幕：
 
 ```bash
 python roughcut.py input/interview_001.mp4 \
   --profile default \
-  --kimi \
+  --ai \
   --subtitle \
   --project-dir .
 ```
@@ -127,7 +136,7 @@ python roughcut.py input/interview_001.mp4 \
 - `output/review_report.html`: 人工复查表。
 - `work/cuts/cut_list.json`: 可复查的剪辑清单。
 
-### 3. 不调用 Kimi
+### 3. 不调用 AI
 
 如果还没有配置 API key，可以先用本地保守规则运行。本地规则会自动压缩明显长空白，口头禅候选默认进入复查：
 
@@ -139,7 +148,7 @@ python roughcut.py input/interview_001.mp4 \
 
 ### 4. 只生成清单，不渲染视频
 
-调试转写、候选检测或 Kimi 判断时，可以先不生成粗剪视频：
+调试转写、候选检测或 AI 判断时，可以先不生成粗剪视频：
 
 ```bash
 python roughcut.py input/interview_001.mp4 \
@@ -171,8 +180,8 @@ python roughcut.py --help
 
 - `work/candidates/silence_candidates.json`: 长空白候选。
 - `work/candidates/filler_candidates.json`: 口头禅候选。
-- `work/kimi/kimi_task_001.json`: 交给 Kimi 的任务 JSON。
-- `work/kimi/kimi_result_001.json`: Kimi 或本地保守规则的结果。
+- `work/ai/ai_task_001.json`: 交给 AI 模型的任务 JSON。
+- `work/ai/ai_result_001.json`: AI 模型或本地保守规则的结果。
 - `work/cuts/cut_list.json`: 最终可执行剪辑清单。
 - `work/cuts/review_items.csv`: 人工复查 CSV。
 - `output/review_report.html`: 人工复查网页。
@@ -187,7 +196,7 @@ python roughcut.py --help
 - 0.8-1.5 秒停顿只标记。
 - 1.5 秒以上停顿建议压缩。
 - 3 秒以上停顿压缩后默认保留 0.6 秒。
-- Kimi 或本地规则置信度低于 `0.85` 不自动执行，进入复查。
+- AI 模型或本地规则置信度低于 `0.85` 不自动执行，进入复查。
 - 两个删除片段距离小于 `0.3` 秒会合并。
 - 删除点前后默认保留 `0.15` 秒余量。
 
@@ -197,4 +206,4 @@ python roughcut.py --help
 python -m pytest
 ```
 
-测试覆盖纯逻辑部分：空白段分类、WhisperX 词级口头禅候选、Kimi 决策合并、keep interval 生成。
+测试覆盖纯逻辑部分：空白段分类、WhisperX 词级口头禅候选、AI 决策合并、keep interval 生成。
