@@ -18,7 +18,7 @@ from .ffmpeg_ops import (
 from .fillers import find_filler_candidates
 from .handoff import write_handoff_package
 from .io_utils import ensure_dir, read_json, write_json
-from .llm import build_ai_task, call_openai_compatible, load_ai_results
+from .llm import build_ai_task, call_openai_compatible, load_ai_results, validate_ai_results
 from .reports import write_review_csv, write_review_html
 from .silence import parse_ffmpeg_silencedetect
 from .subtitles import srt_to_ass
@@ -70,7 +70,7 @@ def run_pipeline(options: PipelineOptions) -> dict:
     raw_decisions: list[dict]
     if options.use_ai:
         call_openai_compatible(ai_task_path, ai_result_path)
-        raw_decisions = load_ai_results(ai_result_path)
+        raw_decisions = validate_ai_results(candidates, load_ai_results(ai_result_path))
     else:
         raw_decisions = conservative_local_decisions(candidates)
         write_json(ai_result_path, {"cuts": raw_decisions})

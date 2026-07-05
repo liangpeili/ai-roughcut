@@ -43,6 +43,26 @@ def test_compress_decision_deletes_tail_after_target_duration():
     assert edits[0].end == 44.8
 
 
+def test_compress_decision_does_not_expand_into_speech_with_cut_margin():
+    policy = DecisionPolicy(cut_margin=0.15)
+    decision = normalize_decision(
+        {
+            "start": 42.1,
+            "end": 44.8,
+            "action": "compress",
+            "target_duration": 0.5,
+            "reason": "长空白",
+            "confidence": 0.9,
+        }
+    )
+
+    edits, reviews = executable_edits([decision], policy)
+
+    assert reviews == []
+    assert edits[0].start == 42.6
+    assert edits[0].end == 44.8
+
+
 def test_lower_confidence_decision_moves_to_review():
     policy = DecisionPolicy(auto_confidence=0.85)
     decision = normalize_decision(

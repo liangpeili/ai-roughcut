@@ -33,9 +33,9 @@ def executable_edits(decisions: list[Decision], policy: DecisionPolicy) -> tuple
             edits.append(_delete_interval(decision.start, decision.end, policy.cut_margin, decision.reason))
         elif decision.action == "compress":
             target = decision.target_duration if decision.target_duration is not None else 0.5
-            delete_start = decision.start + target
-            if delete_start < decision.end:
-                edits.append(_delete_interval(delete_start, decision.end, policy.cut_margin, decision.reason))
+            edit = _compress_interval(decision.start, decision.end, target, decision.reason)
+            if edit is not None:
+                edits.append(edit)
     return merge_nearby_edits(edits, policy.merge_gap), review_items
 
 
@@ -43,6 +43,14 @@ def _delete_interval(start: float, end: float, margin: float, reason: str) -> Ed
     adjusted_start = round(max(0.0, start - margin), 3)
     adjusted_end = round(max(adjusted_start, end + margin), 3)
     return EditInterval(start=adjusted_start, end=adjusted_end, kind="delete", reason=reason)
+
+
+def _compress_interval(start: float, end: float, target: float, reason: str) -> EditInterval | None:
+    delete_start = round(start + target, 3)
+    delete_end = round(end, 3)
+    if delete_start >= delete_end:
+        return None
+    return EditInterval(start=delete_start, end=delete_end, kind="delete", reason=reason)
 
 
 def _review_reason(decision: Decision, policy: DecisionPolicy) -> str:

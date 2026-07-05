@@ -10,24 +10,26 @@
 ai_roughcut/
 ├── input/
 ├── work/
-│   ├── 00_normalized.mp4
-│   ├── audio.wav
-│   ├── transcript/
-│   ├── candidates/
-│   ├── ai/
-│   ├── cuts/
-│   └── clips/
+│   └── <素材名>/
+│       ├── 00_normalized.mp4
+│       ├── audio.wav
+│       ├── transcript/
+│       ├── candidates/
+│       ├── ai/
+│       ├── cuts/
+│       └── clips/
 ├── output/
-│   ├── rough_cut.mp4
-│   ├── final_clean.mp4
-│   ├── final_burned.mp4
-│   ├── subtitle.srt
-│   ├── subtitle.ass
-│   ├── review_report.html
-│   └── handoff/
-│       ├── timeline.fcpxml
-│       ├── edit_decisions.csv
-│       └── import_notes.md
+│   └── <素材名>/
+│       ├── rough_cut.mp4
+│       ├── final_clean.mp4
+│       ├── final_burned.mp4
+│       ├── subtitle.srt
+│       ├── subtitle.ass
+│       ├── review_report.html
+│       └── handoff/
+│           ├── timeline.fcpxml
+│           ├── edit_decisions.csv
+│           └── import_notes.md
 ├── src/ai_roughcut/
 ├── tests/
 └── roughcut.py
@@ -132,11 +134,11 @@ python roughcut.py input/demo.MOV --ai --subtitle --project-dir .
 
 完成后重点查看：
 
-- `output/rough_cut.mp4`: 自动粗剪版。
-- `output/final_clean.mp4`: 不烧字幕版本。
-- `output/final_burned.mp4`: 烧字幕版本。
-- `output/review_report.html`: 人工复查表。
-- `work/cuts/cut_list.json`: 可复查的剪辑清单。
+- `output/<素材名>/rough_cut.mp4`: 自动粗剪版。
+- `output/<素材名>/final_clean.mp4`: 不烧字幕版本。
+- `output/<素材名>/final_burned.mp4`: 烧字幕版本。
+- `output/<素材名>/review_report.html`: 人工复查表。
+- `work/<素材名>/cuts/cut_list.json`: 可复查的剪辑清单。
 
 ### 3. 不调用 AI
 
@@ -162,7 +164,7 @@ python roughcut.py input/demo.MOV --no-render --project-dir .
 python roughcut.py input/demo.MOV --autoeditor-preview --project-dir .
 ```
 
-输出位置：`work/01_autoeditor_preview.mp4`。
+输出位置：`work/<素材名>/01_autoeditor_preview.mp4`。
 
 ### 6. 查看命令帮助
 
@@ -172,17 +174,17 @@ python roughcut.py --help
 
 ## 输出
 
-- `work/candidates/silence_candidates.json`: 长空白候选。
-- `work/candidates/filler_candidates.json`: 口头禅候选。
-- `work/ai/ai_task_001.json`: 交给 AI 模型的任务 JSON。
-- `work/ai/ai_result_001.json`: AI 模型或本地保守规则的结果。
-- `work/cuts/cut_list.json`: 最终可执行剪辑清单。
-- `work/cuts/review_items.csv`: 人工复查 CSV。
-- `output/review_report.html`: 人工复查网页。
-- `output/rough_cut.mp4`: 自动粗剪版。
-- `output/final_clean.mp4`: 不烧字幕成片。
-- `output/final_burned.mp4`: 烧字幕成片。
-- `output/subtitle.srt` / `output/subtitle.ass`: 平台字幕和样式字幕。
+- `work/<素材名>/candidates/silence_candidates.json`: 长空白候选。
+- `work/<素材名>/candidates/filler_candidates.json`: 口头禅候选。
+- `work/<素材名>/ai/ai_task_001.json`: 交给 AI 模型的任务 JSON。
+- `work/<素材名>/ai/ai_result_001.json`: AI 模型或本地保守规则的结果。
+- `work/<素材名>/cuts/cut_list.json`: 最终可执行剪辑清单。
+- `work/<素材名>/cuts/review_items.csv`: 人工复查 CSV。
+- `output/<素材名>/review_report.html`: 人工复查网页。
+- `output/<素材名>/rough_cut.mp4`: 自动粗剪版。
+- `output/<素材名>/final_clean.mp4`: 不烧字幕成片。
+- `output/<素材名>/final_burned.mp4`: 烧字幕成片。
+- `output/<素材名>/subtitle.srt` / `output/<素材名>/subtitle.ass`: 平台字幕和样式字幕。
 - `output/<素材名>/handoff/timeline.fcpxml`: 可尝试导入剪映或 CapCut 桌面版的单轨时间线交换文件。
 - `output/<素材名>/handoff/edit_decisions.csv`: 保留和删除片段的源时间码、时间线时间码和删除原因。
 - `output/<素材名>/handoff/import_notes.md`: 导入建议和 XML 不兼容时的兜底流程。
@@ -205,7 +207,8 @@ python roughcut.py --help
 - 3 秒以上停顿压缩后默认保留 0.6 秒。
 - AI 模型或本地规则置信度低于 `0.85` 不自动执行，进入复查。
 - 两个删除片段距离小于 `0.3` 秒会合并。
-- 删除点前后默认保留 `0.15` 秒余量。
+- 删除口头禅等片段时，删除点前后默认扩展 `0.15` 秒余量。
+- 压缩长空白只删除空白尾段，不向空白外扩展，避免误伤下一句话开头。
 
 ## 测试
 

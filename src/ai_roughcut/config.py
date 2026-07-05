@@ -14,8 +14,8 @@ class SilencePolicy:
 
 @dataclass(frozen=True)
 class DecisionPolicy:
-    auto_confidence: float = 0.75
-    review_confidence: float = 0.60
+    auto_confidence: float = 0.85
+    review_confidence: float = 0.70
     merge_gap: float = 0.3
     cut_margin: float = 0.15
     protected_speakers: set[str] = field(default_factory=set)
