@@ -16,6 +16,7 @@ from .ffmpeg_ops import (
     run_command,
 )
 from .fillers import find_filler_candidates
+from .handoff import write_handoff_package
 from .io_utils import ensure_dir, read_json, write_json
 from .llm import build_ai_task, call_openai_compatible, load_ai_results
 from .reports import write_review_csv, write_review_html
@@ -80,6 +81,12 @@ def run_pipeline(options: PipelineOptions) -> dict:
     write_json(cut_list_path, cut_list.to_dict())
     write_review_csv(paths.work / "cuts" / "review_items.csv", cut_list.review_items)
     write_review_html(paths.output / "review_report.html", cut_list.review_items)
+    handoff = write_handoff_package(
+        cut_list,
+        paths.output / "handoff",
+        project_name=options.input_path.stem,
+        subtitle_enabled=options.subtitle,
+    )
 
     rough_cut = paths.output / "rough_cut.mp4"
     if options.render:
@@ -105,6 +112,9 @@ def run_pipeline(options: PipelineOptions) -> dict:
         "normalized": str(normalized),
         "cut_list": str(cut_list_path),
         "review_report": str(paths.output / "review_report.html"),
+        "handoff_dir": handoff["handoff_dir"],
+        "fcpxml": handoff["fcpxml"],
+        "edit_decisions": handoff["edit_decisions"],
         "rough_cut": str(rough_cut) if options.render else "",
     }
 
