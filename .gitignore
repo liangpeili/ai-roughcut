@@ -4,6 +4,12 @@ __pycache__/
 .pytest_cache/
 docs/
 
+.env
+.env.*
+!.env.example
+
+*.egg-info/
+
 work/*
 !work/.gitkeep
 output/*

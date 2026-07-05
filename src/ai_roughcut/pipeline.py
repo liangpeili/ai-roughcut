@@ -21,7 +21,7 @@ from .llm import build_ai_task, call_openai_compatible, load_ai_results
 from .reports import write_review_csv, write_review_html
 from .silence import parse_ffmpeg_silencedetect
 from .subtitles import srt_to_ass
-from .whisperx_ops import expected_json_path, expected_srt_path, transcribe
+from .whisperx_ops import expected_json_path, expected_srt_path, json_to_srt, transcribe
 
 
 @dataclass(frozen=True)
@@ -93,6 +93,7 @@ def run_pipeline(options: PipelineOptions) -> dict:
         transcribe(rough_audio, final_subtitles, model=options.whisperx_model, language=options.language)
         srt_path = expected_srt_path(rough_audio, final_subtitles)
         json_path = expected_json_path(rough_audio, final_subtitles)
+        json_to_srt(json_path, srt_path)
         output_srt = paths.output / "subtitle.srt"
         output_ass = paths.output / "subtitle.ass"
         shutil.copyfile(srt_path, output_srt)
