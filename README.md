@@ -29,9 +29,35 @@ ai_roughcut/
 └── roughcut.py
 ```
 
-## 外部依赖
+## 安装
 
-先确认这些命令可用：
+### 1. 获取代码
+
+```bash
+git clone git@github.com:liangpeili/ai-roughcut.git
+cd ai-roughcut
+```
+
+如果已经在本地有这个目录，直接进入项目目录即可：
+
+```bash
+cd /path/to/ai-roughcut
+```
+
+### 2. 创建 Python 环境
+
+建议使用 Python 3.10 或更高版本：
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e ".[dev]"
+```
+
+### 3. 安装外部命令
+
+本项目通过命令行调用 `ffmpeg`、`ffprobe` 和 `whisperx`。先确认它们可用：
 
 ```bash
 ffmpeg -version
@@ -39,13 +65,30 @@ ffprobe -version
 whisperx --help
 ```
 
-可选：
+如果 `ffmpeg` 不存在，请先安装 FFmpeg。macOS 可以使用 Homebrew：
+
+```bash
+brew install ffmpeg
+```
+
+Ubuntu/Debian 可以使用 apt：
+
+```bash
+sudo apt update
+sudo apt install ffmpeg
+```
+
+WhisperX 需要按你的 CPU/GPU 环境单独安装。本项目不固定 WhisperX 的安装方式，只要求安装后能运行 `whisperx` 命令。
+
+Auto-Editor 是可选依赖，只在使用 `--autoeditor-preview` 时需要：
 
 ```bash
 auto-editor --help
 ```
 
-Kimi 调用需要环境变量：
+### 4. 配置 Kimi，可选
+
+只有传入 `--kimi` 时才需要配置 Moonshot/Kimi API key：
 
 ```bash
 export MOONSHOT_API_KEY="你的 key"
@@ -54,20 +97,19 @@ export KIMI_MODEL="kimi-latest"
 
 模型名以你的 Moonshot 控制台实际可用模型为准。
 
-## 安装
+## 运行
 
-```bash
-cd /home/ubuntu/summer-holiday/ai_roughcut
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -e ".[dev]"
+### 1. 放入素材
+
+把待处理视频放到 `input/` 目录，例如：
+
+```text
+input/interview_001.mp4
 ```
 
-WhisperX 本身可能需要按你的 CUDA/CPU 环境单独安装；本项目通过 `whisperx` 命令调用它。
+### 2. 完整粗剪
 
-## 使用
-
-把素材放入 `input/` 后运行：
+调用 Kimi 做删除判断，并在粗剪后重跑 WhisperX 生成字幕：
 
 ```bash
 python roughcut.py input/interview_001.mp4 \
@@ -77,7 +119,17 @@ python roughcut.py input/interview_001.mp4 \
   --project-dir .
 ```
 
-不调用 Kimi，只用本地保守规则生成候选、剪辑清单和复查表：
+完成后重点查看：
+
+- `output/rough_cut.mp4`: 自动粗剪版。
+- `output/final_clean.mp4`: 不烧字幕版本。
+- `output/final_burned.mp4`: 烧字幕版本。
+- `output/review_report.html`: 人工复查表。
+- `work/cuts/cut_list.json`: 可复查的剪辑清单。
+
+### 3. 不调用 Kimi
+
+如果还没有配置 API key，可以先用本地保守规则运行。本地规则会自动压缩明显长空白，口头禅候选默认进入复查：
 
 ```bash
 python roughcut.py input/interview_001.mp4 \
@@ -85,7 +137,9 @@ python roughcut.py input/interview_001.mp4 \
   --project-dir .
 ```
 
-只生成清单和报告，不渲染视频：
+### 4. 只生成清单，不渲染视频
+
+调试转写、候选检测或 Kimi 判断时，可以先不生成粗剪视频：
 
 ```bash
 python roughcut.py input/interview_001.mp4 \
@@ -94,13 +148,23 @@ python roughcut.py input/interview_001.mp4 \
   --project-dir .
 ```
 
-同时生成 Auto-Editor 参考版：
+### 5. 生成 Auto-Editor 参考版
+
+如果安装了 Auto-Editor，可以额外生成一个快速去空白预览版：
 
 ```bash
 python roughcut.py input/interview_001.mp4 \
   --profile default \
   --autoeditor-preview \
   --project-dir .
+```
+
+输出位置：`work/01_autoeditor_preview.mp4`。
+
+### 6. 查看命令帮助
+
+```bash
+python roughcut.py --help
 ```
 
 ## 输出
