@@ -3,8 +3,13 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 from .config import get_profile
 from .pipeline import PipelineOptions, run_pipeline
+
+
+load_dotenv()
 
 
 def build_parser() -> argparse.ArgumentParser:
