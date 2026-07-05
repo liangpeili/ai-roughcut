@@ -11,6 +11,19 @@ def run_command(command: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(command, check=True, text=True, capture_output=True)
 
 
+def _ffmpeg_supports_filter(filter_name: str) -> bool:
+    try:
+        result = subprocess.run(
+            ["ffmpeg", "-filters"],
+            check=True,
+            text=True,
+            capture_output=True,
+        )
+    except subprocess.CalledProcessError:
+        return False
+    return filter_name in result.stdout
+
+
 def normalize_video(input_path: Path, output_path: Path) -> None:
     ensure_dir(output_path.parent)
     run_command(
@@ -150,6 +163,9 @@ def render_keep_intervals(source: Path, keep_intervals: list[KeepInterval], outp
 
 def burn_subtitles(input_path: Path, ass_path: Path, output_path: Path) -> None:
     ensure_dir(output_path.parent)
+    if not _ffmpeg_supports_filter("subtitles"):
+        print(f"[warn] ffmpeg does not support the subtitles filter (libass missing); skipping burned subtitle output: {output_path}")
+        return
     run_command(
         [
             "ffmpeg",
