@@ -17,11 +17,13 @@ def build_ai_task(transcript: dict, candidates: list[dict], profile_name: str) -
         "role": "documentary_interview_roughcut_assistant",
         "profile": profile_name,
         "style_rules": [
-            "保留真实感、方言、停顿、笑声。",
+            "保留被访谈者的真实语气、方言、笑声和情绪停顿。",
             "不要把访谈剪成流畅口播课。",
-            "采访者自己的口头禅可以适当删除。",
-            "被访谈者的犹豫、沉默、情绪停顿要谨慎保留。",
-            "涉及隐私、学校、人名、家庭矛盾的地方只标记为人工复查，不要自动处理。",
+            "对于候选建议为 compress 的明显长空白，优先执行 compress。",
+            "对于采访者自己的重复口头禅，可以适当 delete。",
+            "只有涉及隐私、学校、人名、家庭矛盾或语义不完整时才标记 review。",
+            "不要过度保守：无意义的停顿和重复 filler 应该被处理。",
+            "必须对 candidates 列表中的每一个候选返回一条 decision，start/end 要与候选完全一致，不要合并、不要跳过。",
         ],
         "return_format": {
             "cuts": [
