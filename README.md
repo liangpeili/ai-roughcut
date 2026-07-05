@@ -121,12 +121,14 @@ input/interview_001.mp4
 调用 OpenAI-compatible API 做删除判断，并在粗剪后重跑 WhisperX 生成字幕：
 
 ```bash
-python roughcut.py input/interview_001.mp4 \
+python roughcut.py input/demo.MOV \
   --profile default \
   --ai \
   --subtitle \
   --project-dir .
 ```
+
+> 将 `input/demo.MOV` 替换为你的实际素材路径即可。
 
 完成后重点查看：
 
