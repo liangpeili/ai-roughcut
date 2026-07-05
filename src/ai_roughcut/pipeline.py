@@ -38,7 +38,7 @@ class PipelineOptions:
 
 
 def run_pipeline(options: PipelineOptions) -> dict:
-    paths = ProjectPaths(options.project_dir)
+    paths = ProjectPaths(options.project_dir, options.input_path)
     paths.create()
 
     normalized = paths.work / "00_normalized.mp4"
@@ -153,11 +153,12 @@ def run_autoeditor_preview(source: Path, output_path: Path) -> None:
 
 
 class ProjectPaths:
-    def __init__(self, project_dir: Path) -> None:
+    def __init__(self, project_dir: Path, input_path: Path) -> None:
         self.project_dir = project_dir
         self.input = project_dir / "input"
-        self.work = project_dir / "work"
-        self.output = project_dir / "output"
+        project_name = input_path.stem
+        self.work = project_dir / "work" / project_name
+        self.output = project_dir / "output" / project_name
 
     def create(self) -> None:
         for path in [
