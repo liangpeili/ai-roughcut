@@ -42,7 +42,7 @@ class Profile:
 
 
 PROFILES = {
-    "lianglaoshi": Profile(name="lianglaoshi"),
+    "default": Profile(name="default"),
 }
 
 

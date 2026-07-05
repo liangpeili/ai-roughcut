@@ -1,8 +1,8 @@
 # AI Roughcut
 
-本项目是一个访谈视频自动粗剪流水线。它不负责最终内容取舍，只处理机械环节：统一素材格式、转写、检测长空白、标出口头禅候选、生成 Kimi 判断任务、合并剪辑清单、输出粗剪视频、字幕和人工复查报告。
+本项目是一个通用的访谈视频自动粗剪流水线。它不负责最终内容取舍，只处理机械环节：统一素材格式、转写、检测长空白、标出口头禅候选、生成 Kimi 判断任务、合并剪辑清单、输出粗剪视频、字幕和人工复查报告。
 
-默认策略偏保守，适合“梁老师赶大集”这类纪实访谈：被访者的犹豫、沉默、笑声、方言语气词默认进入复查或保留，不做激进自动删除。
+默认策略偏保守，适合纪实访谈、街采、口述访谈、课程访谈等需要保留真实语气和人物状态的素材：被访者的犹豫、沉默、笑声、方言语气词默认进入复查或保留，不做激进自动删除。
 
 ## 目录
 
@@ -70,8 +70,8 @@ WhisperX 本身可能需要按你的 CUDA/CPU 环境单独安装；本项目通�
 把素材放入 `input/` 后运行：
 
 ```bash
-python roughcut.py input/20250715_石莲子集_访谈01.mp4 \
-  --profile lianglaoshi \
+python roughcut.py input/interview_001.mp4 \
+  --profile default \
   --kimi \
   --subtitle \
   --project-dir .
@@ -80,16 +80,16 @@ python roughcut.py input/20250715_石莲子集_访谈01.mp4 \
 不调用 Kimi，只用本地保守规则生成候选、剪辑清单和复查表：
 
 ```bash
-python roughcut.py input/20250715_石莲子集_访谈01.mp4 \
-  --profile lianglaoshi \
+python roughcut.py input/interview_001.mp4 \
+  --profile default \
   --project-dir .
 ```
 
 只生成清单和报告，不渲染视频：
 
 ```bash
-python roughcut.py input/20250715_石莲子集_访谈01.mp4 \
-  --profile lianglaoshi \
+python roughcut.py input/interview_001.mp4 \
+  --profile default \
   --no-render \
   --project-dir .
 ```
@@ -97,8 +97,8 @@ python roughcut.py input/20250715_石莲子集_访谈01.mp4 \
 同时生成 Auto-Editor 参考版：
 
 ```bash
-python roughcut.py input/20250715_石莲子集_访谈01.mp4 \
-  --profile lianglaoshi \
+python roughcut.py input/interview_001.mp4 \
+  --profile default \
   --autoeditor-preview \
   --project-dir .
 ```

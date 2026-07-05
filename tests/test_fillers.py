@@ -22,7 +22,7 @@ def test_find_filler_candidates_reads_whisperx_words():
         ]
     }
 
-    candidates = find_filler_candidates(transcript, get_profile("lianglaoshi").filler_words)
+    candidates = find_filler_candidates(transcript, get_profile("default").filler_words)
 
     assert len(candidates) == 1
     assert candidates[0].text == "嗯"

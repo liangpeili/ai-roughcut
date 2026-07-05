@@ -10,7 +10,7 @@ def test_delete_decision_becomes_edit_interval_with_margin():
             "start": 13.02,
             "end": 13.28,
             "action": "delete",
-            "reason": "梁老师口头填充词",
+            "reason": "采访者口头填充词",
             "confidence": 0.91,
         }
     )
