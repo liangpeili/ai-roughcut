@@ -115,6 +115,7 @@ def run_pipeline(options: PipelineOptions) -> dict:
         "handoff_dir": handoff["handoff_dir"],
         "fcpxml": handoff["fcpxml"],
         "edit_decisions": handoff["edit_decisions"],
+        "roughcut_recipe": handoff["roughcut_recipe"],
         "rough_cut": str(rough_cut) if options.render else "",
     }
 

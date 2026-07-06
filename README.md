@@ -29,6 +29,7 @@ ai_roughcut/
 │       └── handoff/
 │           ├── timeline.fcpxml
 │           ├── edit_decisions.csv
+│           ├── roughcut_recipe.json
 │           └── import_notes.md
 ├── src/ai_roughcut/
 ├── tests/
@@ -187,6 +188,7 @@ python roughcut.py --help
 - `output/<素材名>/subtitle.srt` / `output/<素材名>/subtitle.ass`: 平台字幕和样式字幕。
 - `output/<素材名>/handoff/timeline.fcpxml`: 可尝试导入剪映或 CapCut 桌面版的单轨时间线交换文件。
 - `output/<素材名>/handoff/edit_decisions.csv`: 保留和删除片段的源时间码、时间线时间码和删除原因。
+- `output/<素材名>/handoff/roughcut_recipe.json`: 机器可读剪辑配方，记录源片段、时间线片段、删除片段和复查标记。
 - `output/<素材名>/handoff/import_notes.md`: 导入建议和 XML 不兼容时的兜底流程。
 
 ### 剪映 / CapCut 后续精剪
@@ -195,6 +197,7 @@ python roughcut.py --help
 
 - `timeline.fcpxml`: 基于保留片段生成的单轨时间线，可优先尝试导入支持 FCPXML/XML 的剪映或 CapCut 桌面版。
 - `edit_decisions.csv`: 保留和删除片段的源时间码、时间线时间码和删除原因。
+- `roughcut_recipe.json`: 完整剪辑配方，方便后续自动化、人工审核或二次处理。
 - `import_notes.md`: 导入建议和 XML 不兼容时的兜底流程。
 
 如果当前剪映版本不能导入 XML，可以直接导入 `rough_cut.mp4` 或 `final_clean.mp4`，再参考 `edit_decisions.csv`、`review_report.html` 和可选的 `subtitle.srt` 继续精剪。

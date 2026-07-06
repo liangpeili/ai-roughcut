@@ -3,6 +3,7 @@ from pathlib import Path
 from ai_roughcut.handoff import (
     build_decision_rows,
     build_fcpxml,
+    build_roughcut_recipe,
     format_fcpxml_time,
     write_handoff_package,
 )
@@ -87,6 +88,60 @@ def test_build_decision_rows_includes_keep_timeline_positions_and_delete_reasons
     ]
 
 
+def test_build_roughcut_recipe_describes_source_timeline_and_review_segments(tmp_path):
+    cut_list = sample_cut_list(tmp_path)
+
+    recipe = build_roughcut_recipe(cut_list, project_name="demo")
+
+    assert recipe["project"] == "demo"
+    assert recipe["source"] == str(Path(cut_list.source).resolve())
+    assert recipe["summary"] == {
+        "source_duration": 6.25,
+        "timeline_duration": 4.75,
+        "keep_count": 2,
+        "delete_count": 1,
+        "review_count": 0,
+    }
+    assert recipe["segments"] == [
+        {
+            "index": 1,
+            "type": "keep",
+            "source_start": 0.0,
+            "source_end": 2.5,
+            "source_duration": 2.5,
+            "timeline_start": 0.0,
+            "timeline_end": 2.5,
+            "timeline_duration": 2.5,
+            "review_required": False,
+            "reason": "",
+        },
+        {
+            "index": 2,
+            "type": "keep",
+            "source_start": 4.0,
+            "source_end": 6.25,
+            "source_duration": 2.25,
+            "timeline_start": 2.5,
+            "timeline_end": 4.75,
+            "timeline_duration": 2.25,
+            "review_required": False,
+            "reason": "",
+        },
+        {
+            "index": 3,
+            "type": "delete",
+            "source_start": 2.5,
+            "source_end": 4.0,
+            "source_duration": 1.5,
+            "timeline_start": None,
+            "timeline_end": None,
+            "timeline_duration": None,
+            "review_required": False,
+            "reason": "长空白",
+        },
+    ]
+
+
 def test_write_handoff_package_creates_expected_files(tmp_path):
     cut_list = sample_cut_list(tmp_path)
     output_dir = tmp_path / "output" / "demo" / "handoff"
@@ -97,10 +152,13 @@ def test_write_handoff_package_creates_expected_files(tmp_path):
         "handoff_dir": str(output_dir),
         "fcpxml": str(output_dir / "timeline.fcpxml"),
         "edit_decisions": str(output_dir / "edit_decisions.csv"),
+        "roughcut_recipe": str(output_dir / "roughcut_recipe.json"),
         "import_notes": str(output_dir / "import_notes.md"),
     }
     assert (output_dir / "timeline.fcpxml").read_text(encoding="utf-8").startswith("<?xml version=")
     assert "type,source_start,source_end" in (output_dir / "edit_decisions.csv").read_text(encoding="utf-8")
+    assert '"segments"' in (output_dir / "roughcut_recipe.json").read_text(encoding="utf-8")
     notes = (output_dir / "import_notes.md").read_text(encoding="utf-8")
     assert "timeline.fcpxml" in notes
+    assert "roughcut_recipe.json" in notes
     assert "subtitle.srt" in notes

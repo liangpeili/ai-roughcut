@@ -4,7 +4,7 @@ import csv
 from html import escape
 from pathlib import Path
 
-from .io_utils import ensure_dir
+from .io_utils import ensure_dir, write_json
 from .models import CutList
 
 
@@ -118,6 +118,82 @@ def build_decision_rows(cut_list: CutList) -> list[dict[str, str]]:
     return rows
 
 
+def build_roughcut_recipe(cut_list: CutList, project_name: str) -> dict:
+    timeline_cursor = 0.0
+    segments: list[dict] = []
+    for interval in cut_list.keep_intervals:
+        duration = round(max(0.0, interval.end - interval.start), 3)
+        timeline_start = round(timeline_cursor, 3)
+        timeline_end = round(timeline_cursor + duration, 3)
+        segments.append(
+            {
+                "index": len(segments) + 1,
+                "type": "keep",
+                "source_start": round(interval.start, 3),
+                "source_end": round(interval.end, 3),
+                "source_duration": duration,
+                "timeline_start": timeline_start,
+                "timeline_end": timeline_end,
+                "timeline_duration": duration,
+                "review_required": False,
+                "reason": "",
+            }
+        )
+        timeline_cursor += duration
+    for interval in cut_list.edit_intervals:
+        segments.append(
+            {
+                "index": len(segments) + 1,
+                "type": "delete",
+                "source_start": round(interval.start, 3),
+                "source_end": round(interval.end, 3),
+                "source_duration": round(max(0.0, interval.end - interval.start), 3),
+                "timeline_start": None,
+                "timeline_end": None,
+                "timeline_duration": None,
+                "review_required": False,
+                "reason": interval.reason,
+            }
+        )
+    for item in cut_list.review_items:
+        segments.append(
+            {
+                "index": len(segments) + 1,
+                "type": "review",
+                "source_start": round(item.start, 3),
+                "source_end": round(item.end, 3),
+                "source_duration": round(max(0.0, item.end - item.start), 3),
+                "timeline_start": None,
+                "timeline_end": None,
+                "timeline_duration": None,
+                "review_required": True,
+                "reason": item.reason,
+                "confidence": None if item.confidence is None else round(item.confidence, 3),
+                "speaker": item.speaker,
+                "text": item.text,
+            }
+        )
+    return {
+        "project": project_name,
+        "source": str(Path(cut_list.source).resolve()),
+        "summary": {
+            "source_duration": _source_duration(cut_list),
+            "timeline_duration": round(timeline_cursor, 3),
+            "keep_count": len(cut_list.keep_intervals),
+            "delete_count": len(cut_list.edit_intervals),
+            "review_count": len(cut_list.review_items),
+        },
+        "segments": segments,
+    }
+
+
+def _source_duration(cut_list: CutList) -> float:
+    ends = [item.end for item in cut_list.keep_intervals]
+    ends.extend(item.end for item in cut_list.edit_intervals)
+    ends.extend(item.end for item in cut_list.review_items)
+    return round(max(ends, default=0.0), 3)
+
+
 def build_import_notes(project_name: str, subtitle_enabled: bool) -> str:
     subtitle_note = (
         "- If subtitle generation was enabled, import `../subtitle.srt` for editable captions."
@@ -132,6 +208,7 @@ def build_import_notes(project_name: str, subtitle_enabled: bool) -> str:
             "",
             "- `timeline.fcpxml`: Try importing this first in Jianying/CapCut desktop if your version supports XML timeline import.",
             "- `edit_decisions.csv`: Reviewable source and timeline timecodes for kept and removed ranges.",
+            "- `roughcut_recipe.json`: Machine-readable rough-cut recipe with source ranges, timeline ranges, and review markers.",
             "- `import_notes.md`: This guide.",
             "",
             "Fallback workflow:",
@@ -154,16 +231,19 @@ def write_handoff_package(
     ensure_dir(output_dir)
     fcpxml_path = output_dir / "timeline.fcpxml"
     decisions_path = output_dir / "edit_decisions.csv"
+    recipe_path = output_dir / "roughcut_recipe.json"
     notes_path = output_dir / "import_notes.md"
     fcpxml_path.write_text(build_fcpxml(cut_list, project_name), encoding="utf-8")
     with decisions_path.open("w", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(file, fieldnames=DECISION_FIELDNAMES)
         writer.writeheader()
         writer.writerows(build_decision_rows(cut_list))
+    write_json(recipe_path, build_roughcut_recipe(cut_list, project_name))
     notes_path.write_text(build_import_notes(project_name, subtitle_enabled), encoding="utf-8")
     return {
         "handoff_dir": str(output_dir),
         "fcpxml": str(fcpxml_path),
         "edit_decisions": str(decisions_path),
+        "roughcut_recipe": str(recipe_path),
         "import_notes": str(notes_path),
     }
