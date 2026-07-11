@@ -213,6 +213,10 @@ python roughcut.py --help
 - 删除口头禅等片段时，删除点前后默认扩展 `0.15` 秒余量。
 - 压缩长空白只删除空白尾段，不向空白外扩展，避免误伤下一句话开头。
 
+## 参考项目
+
+- [video-autopilot-kit](https://github.com/Hao0321/video-autopilot-kit): YouTube / 短视频自动化工具框架，包含纯 ffmpeg programmatic pipeline、CapCut 辅助路径、交付 QA、可运行 examples 和 CapCut/剪映兼容性说明。本项目主要参考它的工程交付思路：优先保持可复现的程序化流程，输出标准视频、字幕、FCPXML、CSV 和机器可读 recipe；同时把剪映/CapCut 草稿 JSON 直改视为版本敏感的实验能力，不作为稳定主路径。
+
 ## 测试
 
 ```bash
